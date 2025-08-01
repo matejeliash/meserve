@@ -10,6 +10,9 @@ Currently, the program allows basic file browsing within a shared part of your f
 The simplest way to run the server:
 
 ```./meserve```
+Run server on specified port:
+
+```./meserve --port 3000```
 
 
 ## To-do
@@ -18,3 +21,8 @@ The simplest way to run the server:
 - [x] - create initial uploadHandler
 - [] - add way to select root HTTP directory
 - [] - add tests
+
+To-do terminal args:
+-[] allow select port
+-[] enable/disable upload
+-[] select server root dir
