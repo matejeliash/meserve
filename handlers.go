@@ -26,6 +26,7 @@ func fileHandler(baseDir string) http.HandlerFunc {
 		}
 
 		if info.IsDir() {
+			fmt.Println("command to write html via template")
 			files, err := os.ReadDir(path)
 			if err != nil {
 				http.Error(w, "Cannot read directory.", http.StatusInternalServerError)
@@ -55,6 +56,7 @@ func fileHandler(baseDir string) http.HandlerFunc {
 
 			tmpl.Execute(w, data)
 		} else {
+
 			// It's a file — serve it directly
 			http.ServeFile(w, r, path)
 		}

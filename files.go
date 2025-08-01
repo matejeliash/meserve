@@ -17,15 +17,16 @@ type FileInfo struct {
 	FormattedModTime string
 }
 
+// change this so it uses os.Stat
 func GetFileInfos(files []os.DirEntry) []FileInfo {
 
-	var fileInfos []FileInfo
+	fileInfos := make([]FileInfo, 0, len(files))
 	for _, file := range files {
 		fileInfo, err := file.Info()
 		if err != nil {
 			continue
+
 		}
-		fileInfo.ModTime()
 		fileInfos = append(fileInfos, FileInfo{
 			Name:             file.Name(),
 			Size:             fileInfo.Size(),
@@ -33,15 +34,9 @@ func GetFileInfos(files []os.DirEntry) []FileInfo {
 			ModTime:          fileInfo.ModTime(),
 			FormattedModTime: formatTime(fileInfo.ModTime()),
 
-			IsDir: file.IsDir(),
-			//Path: filepath.ToSlash(filepath.Join(decodedPath, file.Name())) + func() string {
-			//Path: url.PathEscape(filepath.ToSlash(filepath.Join(r.URL.Path, file.Name()))) + func() string {
-			Path: url.PathEscape(file.Name()) + func() string {
-				if file.IsDir() {
-					return "/"
-				}
-				return ""
-			}(),
+			IsDir: fileInfo.IsDir(),
+
+			Path: url.PathEscape(file.Name()) + "/",
 		})
 	}
 	return fileInfos
