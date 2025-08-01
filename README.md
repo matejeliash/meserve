@@ -9,6 +9,8 @@ Currently, the program allows basic file browsing within a shared part of your f
 
 The simplest way to run the server:
 
+```./meserve```
+
 
 ## To-do
 - [x] - create alpha version of server
