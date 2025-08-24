@@ -21,11 +21,14 @@ Run server on specified port:
 - [x] - create initial fileHandler
 - [x] - create initial uploadHandler
 - [x] - add way to select root HTTP directory
-- [] - add tests
+- [ ] - add tests
 - [x] - split code into more packages
-- [] - put managment of terminal args out of main
+- [ ]  put managment of terminal args out of main
+- [ ]  add way for displayng free space in windows
+
 
 To-do terminal args:
-- [] allow select port
-- [] enable/disable upload
-- [] select server root dir
+- [ ] allow select port
+- [ ] enable/disable upload
+- [ ] select server root dir
+- [ ] allow to hide contrete parts of html like upload div
