@@ -1,18 +1,13 @@
-package main
+package sysinfo
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/matejeliash/meserve/format"
 	"golang.org/x/sys/unix"
 )
 
-func GetDiskStatus() (string, error) {
-	path, err := os.Getwd()
-
-	if err != nil {
-		return "", err
-	}
+func GetDiskStatus(path string) (string, error) {
 
 	var stat unix.Statfs_t
 
@@ -20,8 +15,8 @@ func GetDiskStatus() (string, error) {
 
 	//freeGb := float64(stat.Bavail*uint64(stat.Bsize)) / 1_000_000_000.0
 	//totalGb := float64(stat.Blocks*uint64(stat.Bsize)) / 1_000_000_000.0
-	freeGb := formatSize(int64(stat.Bavail) * stat.Bsize)
-	totalGb := formatSize(int64(stat.Blocks) * stat.Bsize)
+	freeGb := format.FormatSize(int64(stat.Bavail) * stat.Bsize)
+	totalGb := format.FormatSize(int64(stat.Blocks) * stat.Bsize)
 
 	return fmt.Sprintf("%s / %s ", freeGb, totalGb), nil
 

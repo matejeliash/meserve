@@ -3,102 +3,64 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/matejeliash/meserve/handlers"
+	"github.com/matejeliash/meserve/sysinfo"
 )
 
-// func uploadHandler(baseDir string) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		decodedPath, err := url.PathUnescape(r.URL.Path)
-// 		fmt.Println(decodedPath)
-// 		if err != nil {
-// 			http.Error(w, "Invalid URL path.", http.StatusBadRequest)
-// 			return
-// 		}
-// 		if r.Method != http.MethodPost {
-// 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-// 			return
-// 		}
-
-// 		err = r.ParseMultipartForm(64 << 20) // 32MB
-// 		if err != nil {
-// 			http.Error(w, "Failed to parse multipart form", http.StatusBadRequest)
-// 			return
-// 		}
-
-// 		files := r.MultipartForm.File["file"]
-// 		if len(files) == 0 {
-// 			http.Error(w, "No files uploaded", http.StatusBadRequest)
-// 			return
-// 		}
-
-// 		for _, fileHeader := range files {
-// 			file, err := fileHeader.Open()
-// 			if err != nil {
-// 				http.Error(w, fmt.Sprintf("Failed to open file: %s", fileHeader.Filename), http.StatusInternalServerError)
-// 				return
-// 			}
-// 			//defer file.Close()
-
-// 			path := filepath.Join(baseDir, decodedPath)
-// 			dstPath := filepath.Join(path, fileHeader.Filename)
-// 			fmt.Println(path)
-// 			fmt.Println(dstPath)
-// 			outFile, err := os.Create(dstPath)
-// 			if err != nil {
-// 				http.Error(w, fmt.Sprintf("Failed to create file: %s", dstPath), http.StatusInternalServerError)
-// 				return
-// 			}
-// 			//defer outFile.Close()
-
-// 			_, err = io.Copy(outFile, file)
-// 			if err != nil {
-// 				http.Error(w, fmt.Sprintf("Failed to save file: %s", dstPath), http.StatusInternalServerError)
-// 				return
-// 			}
-
-// 			file.Close()
-// 			outFile.Close()
-
-// 			log.Printf("Saved file: %s", dstPath)
-// 		}
-
-// 	}
-// }
+func pathExists(path string) bool {
+	var info os.FileInfo
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
 
 func main() {
 
-	portPtr := flag.Int("port", 8080, "enter port for server to use")
+	//servePath := "."
 
+	portFlag := flag.Int("port", 8080, "enter port for server to use")
+	serveDirFlag := flag.String("serveDir", ".", "root directory from which files are served")
 	flag.Parse()
-	//port := ":8080"
-	//
-	portInt := *portPtr
+	portInt := *portFlag
 	portStr := strconv.Itoa(portInt)
 
-	PrintAllAddresses(portInt)
+	// TODO add port range checking
 
-	diskStatus, err := GetDiskStatus()
+	// baseDir, err := os.Getwd()
+	// if err != nil {
+	// 	fmt.Println("Failed to get current directory:", err)
+	// 	return
+	// }
+
+	selectedDir := *serveDirFlag
+	if !pathExists(selectedDir) {
+		//fmt.Println("wrong --serveDir , dir does not exist")
+		log.Fatalf("--serveDir error, cannot access `%s`", selectedDir)
+
+	}
+
+	sysinfo.PrintAllAddresses(portInt)
+
+	diskStatus, err := sysinfo.GetDiskStatus(selectedDir)
 	if err != nil {
-		fmt.Println("Failed to get disk status:", err)
+		log.Fatalf("failder to get disk space: %v\n", err)
 	}
 	fmt.Println(diskStatus)
 
-	baseDir, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Failed to get current directory:", err)
-		return
-	}
+	http.HandleFunc("GET /", handlers.FileHandler(selectedDir))
+	http.HandleFunc("POST /", handlers.UploadStreamHandler(selectedDir))
 
-	http.HandleFunc("GET /", fileHandler(baseDir))
-	http.HandleFunc("POST /", uploadStreamHandler(baseDir))
-
-	fmt.Printf("Serving directory %s\n", baseDir)
+	fmt.Printf("Serving directory %s\n", selectedDir)
 	err = http.ListenAndServe(":"+portStr, nil)
 
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 }

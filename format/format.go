@@ -1,4 +1,4 @@
-package main
+package format
 
 import (
 	"fmt"
@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-func padRight(str string, length int) string {
+func PadRight(str string, length int) string {
 	if len(str) >= length {
 		return str
 	}
 	return str + strings.Repeat(" ", length-len(str))
 }
 
-func formatSize(size int64) string {
+func FormatSize(size int64) string {
 	switch {
 	case size < 1024:
 		return fmt.Sprintf("%d B", size)
@@ -26,6 +26,6 @@ func formatSize(size int64) string {
 	}
 }
 
-func formatTime(time time.Time) string {
+func FormatTime(time time.Time) string {
 	return time.Format("2006-01-02 15:04:05")
 }

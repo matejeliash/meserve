@@ -20,10 +20,12 @@ Run server on specified port:
 - [x] - create alpha version of server
 - [x] - create initial fileHandler
 - [x] - create initial uploadHandler
-- [] - add way to select root HTTP directory
+- [x] - add way to select root HTTP directory
 - [] - add tests
+- [x] - split code into more packages
+- [] - put managment of terminal args out of main
 
 To-do terminal args:
--[] allow select port
--[] enable/disable upload
--[] select server root dir
+- [] allow select port
+- [] enable/disable upload
+- [] select server root dir

@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"fmt"
@@ -8,44 +8,55 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/matejeliash/meserve/files"
+	"github.com/matejeliash/meserve/sysinfo"
+	"github.com/matejeliash/meserve/tmpl"
 )
 
-func fileHandler(baseDir string) http.HandlerFunc {
+func FileHandler(baseDir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decodedPath, err := url.PathUnescape(r.URL.Path)
 		if err != nil {
-			http.Error(w, "Invalid URL path.", http.StatusBadRequest)
+			http.Error(w, "invalid URL path.", http.StatusBadRequest)
 			return
 		}
 
 		path := filepath.Join(baseDir, decodedPath)
 		info, err := os.Stat(path)
 		if err != nil {
-			http.Error(w, "file with this url not found", http.StatusNotFound)
+			http.Error(w, "file with this url not found.", http.StatusNotFound)
 			return
 		}
 
 		if info.IsDir() {
-			fmt.Println("command to write html via template")
-			files, err := os.ReadDir(path)
+
+			start := time.Now()
+			fileInfos, err := files.GetFileInfos(path)
+			fmt.Println(time.Since(start))
 			if err != nil {
-				http.Error(w, "Cannot read directory.", http.StatusInternalServerError)
+				http.Error(w, "cannot read directory.", http.StatusInternalServerError)
 				return
 			}
 
-			fileInfos := GetFileInfos(files)
+			files.SortFileInfos(fileInfos)
 
-			SortFileInfos(fileInfos)
-
-			diskStatus, err := GetDiskStatus()
+			diskStatus, err := sysinfo.GetDiskStatus(path)
 			if err != nil {
-				http.Error(w, "Cannot get diskstatus.", http.StatusInternalServerError)
+				http.Error(w, "cannot get diskstatus.", http.StatusInternalServerError)
 				return
 			}
 
-			tmpl := GetTemplate()
+			tmpl, err := tmpl.GetTemplate()
+
+			if err != nil {
+				http.Error(w, "Cannot parse template", http.StatusInternalServerError)
+
+				return
+			}
 			data := struct {
-				Files      []FileInfo
+				Files      []files.FileInfo
 				Path       string
 				DiskStatus string
 			}{
@@ -54,7 +65,12 @@ func fileHandler(baseDir string) http.HandlerFunc {
 				DiskStatus: diskStatus,
 			}
 
-			tmpl.Execute(w, data)
+			err = tmpl.Execute(w, data)
+
+			if err != nil {
+				http.Error(w, "Cannot print template.", http.StatusInternalServerError)
+				return
+			}
 		} else {
 
 			// It's a file — serve it directly
@@ -63,7 +79,7 @@ func fileHandler(baseDir string) http.HandlerFunc {
 	}
 }
 
-func uploadStreamHandler(baseDir string) http.HandlerFunc {
+func UploadStreamHandler(baseDir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decodedPath, err := url.PathUnescape(r.URL.Path)
 		if err != nil {
