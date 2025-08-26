@@ -3,7 +3,7 @@ package sysinfo
 import (
 	"fmt"
 
-	"github.com/matejeliash/meserve/format"
+	"github.com/matejeliash/meserve/internal/format"
 	"golang.org/x/sys/unix"
 )
 

@@ -8,7 +8,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/matejeliash/meserve/format"
+	"github.com/matejeliash/meserve/internal/format"
 )
 
 type FileInfo struct {

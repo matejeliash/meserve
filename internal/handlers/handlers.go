@@ -9,9 +9,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/matejeliash/meserve/files"
-	"github.com/matejeliash/meserve/sysinfo"
-	"github.com/matejeliash/meserve/tmpl"
+	"github.com/matejeliash/meserve/internal/files"
+	"github.com/matejeliash/meserve/internal/sysinfo"
+	"github.com/matejeliash/meserve/internal/tmpl"
 )
 
 func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
