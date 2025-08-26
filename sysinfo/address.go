@@ -41,7 +41,7 @@ func PrintAllAddresses(port int) {
 			}
 
 			if ip.To4() != nil {
-				fmt.Printf("availables also via: http://%s:%d\n", ip.String(), port)
+				fmt.Printf("accessible also using: http://%s:%d\n", ip.String(), port)
 			}
 		}
 	}

@@ -27,34 +27,34 @@ func main() {
 
 	portFlag := flag.Int("port", 8080, "enter port for server to use")
 	serveDirFlag := flag.String("serveDir", ".", "root directory from which files are served")
+	enableUploadFlag := flag.Bool("enableUpload", false, "usage enables uploading of files using form")
+
+	flag.Usage = func() {
+		fmt.Println("meserve - a simple fileserver written in Go that allows file browsing, downloading and uploading.")
+		fmt.Println("Usage:")
+		flag.PrintDefaults()
+	}
 	flag.Parse()
+
 	portInt := *portFlag
 	portStr := strconv.Itoa(portInt)
-
-	// TODO add port range checking
-
-	// baseDir, err := os.Getwd()
-	// if err != nil {
-	// 	fmt.Println("Failed to get current directory:", err)
-	// 	return
-	// }
-
 	selectedDir := *serveDirFlag
+	enabledUpload := *enableUploadFlag
+
 	if !pathExists(selectedDir) {
 		//fmt.Println("wrong --serveDir , dir does not exist")
 		log.Fatalf("--serveDir error, cannot access `%s`", selectedDir)
-
 	}
-
-	sysinfo.PrintAllAddresses(portInt)
 
 	diskStatus, err := sysinfo.GetDiskStatus(selectedDir)
 	if err != nil {
-		log.Fatalf("failder to get disk space: %v\n", err)
+		log.Fatalf("failed to get disk space: %v\n", err)
 	}
 	fmt.Println(diskStatus)
 
-	http.HandleFunc("GET /", handlers.FileHandler(selectedDir))
+	sysinfo.PrintAllAddresses(portInt)
+
+	http.HandleFunc("GET /", handlers.FileHandler(selectedDir, enabledUpload))
 	http.HandleFunc("POST /", handlers.UploadStreamHandler(selectedDir))
 
 	fmt.Printf("Serving directory %s\n", selectedDir)

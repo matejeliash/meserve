@@ -25,10 +25,12 @@ Run server on specified port:
 - [x] - split code into more packages
 - [ ]  put managment of terminal args out of main
 - [ ]  add way for displayng free space in windows
+- [ ] - change upload so alert prevents killing of window during upload
+- [ ] - fix all sorting methods that use javascript
 
 
 To-do terminal args:
-- [ ] allow select port
-- [ ] enable/disable upload
-- [ ] select server root dir
+- [x] allow select port
+- [x] enable/disable upload
+- [x] select server root dir
 - [ ] allow to hide contrete parts of html like upload div

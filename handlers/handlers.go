@@ -8,35 +8,34 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/matejeliash/meserve/files"
 	"github.com/matejeliash/meserve/sysinfo"
 	"github.com/matejeliash/meserve/tmpl"
 )
 
-func FileHandler(baseDir string) http.HandlerFunc {
+func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decodedPath, err := url.PathUnescape(r.URL.Path)
 		if err != nil {
-			http.Error(w, "invalid URL path.", http.StatusBadRequest)
+			http.Error(w, "Invalid URL path", http.StatusBadRequest)
 			return
 		}
 
 		path := filepath.Join(baseDir, decodedPath)
 		info, err := os.Stat(path)
 		if err != nil {
-			http.Error(w, "file with this url not found.", http.StatusNotFound)
+			http.Error(w, "File with this url not found", http.StatusNotFound)
 			return
 		}
 
 		if info.IsDir() {
 
-			start := time.Now()
+			//start := time.Now()
 			fileInfos, err := files.GetFileInfos(path)
-			fmt.Println(time.Since(start))
+			//fmt.Println(time.Since(start))
 			if err != nil {
-				http.Error(w, "cannot read directory.", http.StatusInternalServerError)
+				http.Error(w, "Failed to get files", http.StatusInternalServerError)
 				return
 			}
 
@@ -44,31 +43,32 @@ func FileHandler(baseDir string) http.HandlerFunc {
 
 			diskStatus, err := sysinfo.GetDiskStatus(path)
 			if err != nil {
-				http.Error(w, "cannot get diskstatus.", http.StatusInternalServerError)
+				http.Error(w, "Failed to get disk info", http.StatusInternalServerError)
 				return
 			}
 
 			tmpl, err := tmpl.GetTemplate()
 
 			if err != nil {
-				http.Error(w, "Cannot parse template", http.StatusInternalServerError)
-
+				http.Error(w, "Failed to parse template", http.StatusInternalServerError)
 				return
 			}
 			data := struct {
-				Files      []files.FileInfo
-				Path       string
-				DiskStatus string
+				Files         []files.FileInfo
+				Path          string
+				DiskStatus    string
+				EnabledUpload bool
 			}{
-				Files:      fileInfos,
-				Path:       r.URL.Path,
-				DiskStatus: diskStatus,
+				Files:         fileInfos,
+				Path:          r.URL.Path,
+				DiskStatus:    diskStatus,
+				EnabledUpload: enabledUpload,
 			}
 
 			err = tmpl.Execute(w, data)
 
 			if err != nil {
-				http.Error(w, "Cannot print template.", http.StatusInternalServerError)
+				http.Error(w, "Failed to  execute template", http.StatusInternalServerError)
 				return
 			}
 		} else {
