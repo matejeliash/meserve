@@ -9,11 +9,39 @@ Currently, the program allows basic file browsing within a shared part of your f
 
 The simplest way to run the server:
 
-```./meserve```
+```
+./meserve
+```
 
-Run server on specified port:
+Run server on specified port with specified directory and allowed upload:
 
-```./meserve --port 3000```
+```
+./meserve --port 3000 --serveDir /media/shared --enableUpload
+```
+
+## Usage with docker
+
+
+Create image:
+```
+git clone https://github.com/matejeliash/meserve.git
+cd meserve
+docker build -t meserve .
+```
+
+Run container from image:
+```
+docker run --name <container_name> -p <host_port>:8080 -d  -v <served_dir>:/app/data meserve --serveDir /app/data --enableUpload
+```
+Example with custom container name, custom port and selected served directory:
+```
+docker run --name meserve_container -p 22222:8080 -d  -v /media/ssd:/app/data meserve --serveDir /app/data --enableUpload
+```
+
+
+
+
+
 
 
 ## To-do
@@ -26,7 +54,7 @@ Run server on specified port:
 - [ ]  put managment of terminal args out of main
 - [ ]  add way for displayng free space in windows
 - [ ] - change upload so alert prevents killing of window during upload
-- [ ] - fix all sorting methods that use javascript
+- [x] - fix all sorting methods that use javascript
 
 
 To-do terminal args:
