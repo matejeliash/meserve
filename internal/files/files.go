@@ -18,7 +18,7 @@ type FileInfo struct {
 	IsDir            bool
 	Path             string
 	ModTime          time.Time
-	JSTime           string
+	UnixModTime      int64
 	FormattedModTime string
 }
 
@@ -62,7 +62,7 @@ func GetFileInfos(path string) ([]FileInfo, error) {
 			ModTime:          statInfo.ModTime(),
 			FormattedModTime: format.FormatTime(statInfo.ModTime()),
 			IsDir:            isDir,
-			JSTime:           statInfo.ModTime().Format(time.RFC3339),
+			UnixModTime:      statInfo.ModTime().UnixMilli(),
 			Path:             escapedPath,
 		})
 	}

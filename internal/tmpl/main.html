@@ -7,6 +7,9 @@
                 font-family: sans-serif;
                 margin: 2rem;
                 text-align: teft;
+
+                white-space: nowrap; /* prevent wrapping */
+                overflow-x: auto;
             }
             a {
                 text-decoration: none;
@@ -22,12 +25,16 @@
             .size {
                 width: 10ch;
             }
-            .date {
+            .type {
+                width: 10ch;
+            }
+            .humanModTime {
                 width: 20ch;
             }
             .sortSpan {
-                background-color: #808080;
+                background-color: #101010;
                 padding: 5px;
+                color: #ffffff;
             }
         </style>
     </head>
@@ -51,12 +58,12 @@
             <p id="status">nothing...</p>
         </div>
         {{end}}
-        <span class="sortSpan" id="sortBySizeAsc">🔺💾</span>
-        <span class="sortSpan" id="sortBySizeDesc">🔻💾</span>
-        <span class="sortSpan" id="sortByModTimeAsc">⬆️📅</span>
-        <span class="sortSpan" id="sortByModTimeDesc">⬇️📅</span>
-        <span class="sortSpan" id="sortByNameAsc">⬆️🔤</span>
-        <span class="sortSpan" id="sortByNameDesc">⬇️🔤</span>
+        <span class="sortSpan" id="sortBySizeAsc">0-9💾</span>
+        <span class="sortSpan" id="sortBySizeDesc">9-0💾</span>
+        <span class="sortSpan" id="sortByModTimeAsc">newest-oldest📅</span>
+        <span class="sortSpan" id="sortByModTimeDesc">oldest-newest📅</span>
+        <span class="sortSpan" id="sortByNameAsc">A-Z️🔤</span>
+        <span class="sortSpan" id="sortByNameDesc">Z-A🔤</span>
 
         <br />
         <!-- <button id="sortBySizeBtn">Sort by Size</button>
@@ -66,14 +73,14 @@
         <div
             class="file-entry"
             data-size="{{.Size}}"
-            data-timestamp="{{.JSTime}}"
+            data-unixModTime="{{.UnixModTime}}"
             data-type="{{if .IsDir}}dir{{else}}file{{end}}"
         >
             <span class="type"
                 >{{if .IsDir}}📁 &nbspDir{{else}}📄 File{{end}}</span
             >
             <span class="size">{{.HumanSize}}</span>
-            <span class="date">{{.FormattedModTime}}</span>
+            <span class="humanModTime">{{.FormattedModTime}}</span>
             <span class="name"
                 ><a href="{{.Path}}">{{.Name}}{{if .IsDir}}/{{end}}</a></span
             >
@@ -145,8 +152,64 @@
                    xhr.send(formData);
                });
                {{end}}
+
                document
-                   .getElementById("sortBySizeDesc")
+                   .getElementById("sortByModTimeAsc")
+                   .addEventListener("click", () => {
+                       const container = document.body; // or a more specific container of file entries
+                       const files = Array.from(
+                           document.querySelectorAll(".file-entry"),
+                       );
+
+                       files.sort(
+                           (a, b) =>
+                               Number(b.getAttribute("data-unixModTime")) -
+                               Number(a.getAttribute("data-unixModtime")),
+                       );
+
+                       for (const file of files) {
+                           container.appendChild(file);
+                       }
+
+                       backLinks =document.querySelectorAll(".linkBack")
+                       console.log(backLinks)
+                       if (backLinks.length == 2){
+                         container.appendChild(backLinks[1])
+                       }
+
+                   });
+
+
+               document
+                   .getElementById("sortByModTimeDesc")
+                   .addEventListener("click", () => {
+                       const container = document.body; // or a more specific container of file entries
+                       const files = Array.from(
+                           document.querySelectorAll(".file-entry"),
+                       );
+
+                       files.sort(
+                           (a, b) =>
+                               Number(a.getAttribute("data-unixModTime")) -
+                               Number(b.getAttribute("data-unixModTime")),
+                       );
+
+                       for (const file of files) {
+                           container.appendChild(file);
+                       }
+
+                       backLinks =document.querySelectorAll(".linkBack")
+                       console.log(backLinks)
+                       if (backLinks.length == 2){
+                         container.appendChild(backLinks[1])
+                       }
+
+                   });
+
+
+
+               document
+                   .getElementById("sortBySizeAsc")
                    .addEventListener("click", () => {
                        const container = document.body; // or a more specific container of file entries
                        const files = Array.from(
@@ -172,7 +235,7 @@
                    });
 
                document
-                   .getElementById("sortBySizeAsc")
+                   .getElementById("sortBySizeDesc")
                    .addEventListener("click", () => {
                        const container = document.body; // or a more specific container of file entries
                        const files = Array.from(

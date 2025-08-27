@@ -8,8 +8,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/matejeliash/meserve/handlers"
-	"github.com/matejeliash/meserve/sysinfo"
+	"github.com/matejeliash/meserve/internal/handlers"
+	"github.com/matejeliash/meserve/internal/sysinfo"
 )
 
 func pathExists(path string) bool {
@@ -22,8 +22,6 @@ func pathExists(path string) bool {
 }
 
 func main() {
-
-	//servePath := "."
 
 	portFlag := flag.Int("port", 8080, "enter port for server to use")
 	serveDirFlag := flag.String("serveDir", ".", "root directory from which files are served")
