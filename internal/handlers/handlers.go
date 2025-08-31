@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/matejeliash/meserve/internal/files"
 	"github.com/matejeliash/meserve/internal/sysinfo"
@@ -73,10 +74,24 @@ func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
 			}
 		} else {
 
-			// It's a file — serve it directly
+			SetCustomHeaders(w, path)
 			http.ServeFile(w, r, path)
 		}
 	}
+}
+
+func SetCustomHeaders(w http.ResponseWriter, filename string) {
+	ext := strings.ToLower(filepath.Ext(filename))
+
+	switch ext {
+	case ".mkv":
+		w.Header().Set("Content-Type", "video/x-matroska")
+		w.Header().Set("Content-Disposition", "attachment; filename=\""+filename+"\"")
+	// Add other after testing
+	default:
+		// Do nothing; let http.ServeFile handle it
+	}
+
 }
 
 func UploadStreamHandler(baseDir string) http.HandlerFunc {

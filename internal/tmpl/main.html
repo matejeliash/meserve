@@ -55,7 +55,7 @@
         <div id="progress">
             <p id="percent"></p>
             <p id="speed"></p>
-            <p id="status">nothing...</p>
+            <p id="status"></p>
         </div>
         {{end}}
         <span class="sortSpan" id="sortBySizeAsc">0-9💾</span>
@@ -93,6 +93,8 @@
         <script>
 
             {{if .EnabledUpload}}
+
+
                const form = document.getElementById("uploadForm");
                const fileInput = document.getElementById("fileInput");
                const percentDisplay = document.getElementById("percent");
@@ -100,7 +102,9 @@
                const statusDisplay = document.getElementById("status");
 
                form.addEventListener("submit", function (e) {
-                   e.preventDefault();
+
+
+                 e.preventDefault();
 
                    statusDisplay.textContent = "uploading ...";
 
@@ -116,6 +120,13 @@
                    xhr.open("POST", window.location.pathname);
 
                    const startTime = Date.now();
+
+                   // Show alert if user tries to close window while uploading
+                    function handleBeforeUnload(e) {
+                        e.preventDefault();
+                        e.returnValue = ""; // Required for Chrome
+                    }
+                    window.addEventListener("beforeunload", handleBeforeUnload);
 
                    xhr.upload.onprogress = function (e) {
                        if (e.lengthComputable) {
@@ -137,8 +148,7 @@
 
                    xhr.onload = function () {
                        if (xhr.status === 200) {
-                           alert(xhr.responseText);
-                           statusDisplay.textContent = "finished";
+                           statusDisplay.textContent = "Successfully uploaded";
                        } else {
                            alert("Upload failed.");
                        }
