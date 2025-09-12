@@ -80,8 +80,10 @@ func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
 	}
 }
 
-func SetCustomHeaders(w http.ResponseWriter, filename string) {
-	ext := strings.ToLower(filepath.Ext(filename))
+func SetCustomHeaders(w http.ResponseWriter, path string) {
+
+	ext := strings.ToLower(filepath.Ext(path))
+	filename := filepath.Base(path)
 
 	switch ext {
 	case ".mkv":
