@@ -51,6 +51,7 @@ func GetFileInfos(path string) ([]FileInfo, error) {
 		isDir := statInfo.IsDir()
 
 		escapedPath := url.PathEscape(file.Name())
+		//escapedPath := url.QueryEscape(file.Name())
 		if isDir {
 			escapedPath += "/"
 		}

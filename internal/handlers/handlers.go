@@ -24,6 +24,7 @@ func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
 		}
 
 		path := filepath.Join(baseDir, decodedPath)
+		fmt.Println(path)
 		info, err := os.Stat(path)
 		if err != nil {
 			http.Error(w, "File with this url not found", http.StatusNotFound)
