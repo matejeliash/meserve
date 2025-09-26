@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/matejeliash/meserve/internal/format"
@@ -50,7 +51,10 @@ func GetFileInfos(path string) ([]FileInfo, error) {
 
 		isDir := statInfo.IsDir()
 
-		escapedPath := url.PathEscape(file.Name())
+		// Make additon espacing in case when % is present in filename.
+		escapedName := strings.ReplaceAll(file.Name(), "%", "-_PERCENT_-")
+		escapedPath := url.PathEscape(escapedName)
+
 		//escapedPath := url.QueryEscape(file.Name())
 		if isDir {
 			escapedPath += "/"

@@ -17,15 +17,20 @@ import (
 
 func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		decodedPath, err := url.PathUnescape(r.URL.Path)
 		if err != nil {
 			http.Error(w, "Invalid URL path", http.StatusBadRequest)
 			return
 		}
 
-		path := filepath.Join(baseDir, decodedPath)
-		fmt.Println(path)
-		info, err := os.Stat(path)
+		decodedPath = strings.TrimPrefix(decodedPath, "/")
+		realPath := filepath.Join(baseDir, decodedPath)
+
+		realPath = strings.ReplaceAll(realPath, "-_PERCENT_-", "%")
+
+		// fmt.Println(path)
+		info, err := os.Stat(realPath)
 		if err != nil {
 			http.Error(w, "File with this url not found", http.StatusNotFound)
 			return
@@ -33,8 +38,14 @@ func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
 
 		if info.IsDir() {
 
+			// If file in URL is dir for add / the end  by redirection
+			if !strings.HasSuffix(r.URL.Path, "/") {
+				http.Redirect(w, r, r.URL.Path+"/", http.StatusMovedPermanently)
+				return
+			}
+
 			//start := time.Now()
-			fileInfos, err := files.GetFileInfos(path)
+			fileInfos, err := files.GetFileInfos(realPath)
 			//fmt.Println(time.Since(start))
 			if err != nil {
 				http.Error(w, "Failed to get files", http.StatusInternalServerError)
@@ -43,7 +54,7 @@ func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
 
 			files.SortFileInfos(fileInfos)
 
-			diskStatus, err := sysinfo.GetDiskStatus(path)
+			diskStatus, err := sysinfo.GetDiskStatus(realPath)
 			if err != nil {
 				http.Error(w, "Failed to get disk info", http.StatusInternalServerError)
 				return
@@ -70,17 +81,19 @@ func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
 			err = tmpl.Execute(w, data)
 
 			if err != nil {
-				http.Error(w, "Failed to  execute template", http.StatusInternalServerError)
+				http.Error(w, "Failed to execute template", http.StatusInternalServerError)
 				return
 			}
-		} else {
+		} else { // file is not dir and file is served
 
-			SetCustomHeaders(w, path)
-			http.ServeFile(w, r, path)
+			SetCustomHeaders(w, realPath)
+			http.ServeFile(w, r, realPath)
 		}
 	}
 }
 
+// Set custom options in the header, because some files like .mkv are treated by the browser as .webm .
+// Other special cases will be added in future.
 func SetCustomHeaders(w http.ResponseWriter, path string) {
 
 	ext := strings.ToLower(filepath.Ext(path))
@@ -147,62 +160,3 @@ func UploadStreamHandler(baseDir string) http.HandlerFunc {
 		}
 	}
 }
-
-// func uploadHandler(baseDir string) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		decodedPath, err := url.PathUnescape(r.URL.Path)
-// 		fmt.Println(decodedPath)
-// 		if err != nil {
-// 			http.Error(w, "Invalid URL path.", http.StatusBadRequest)
-// 			return
-// 		}
-// 		if r.Method != http.MethodPost {
-// 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-// 			return
-// 		}
-
-// 		err = r.ParseMultipartForm(64 << 20) // 32MB
-// 		if err != nil {
-// 			http.Error(w, "Failed to parse multipart form", http.StatusBadRequest)
-// 			return
-// 		}
-
-// 		files := r.MultipartForm.File["file"]
-// 		if len(files) == 0 {
-// 			http.Error(w, "No files uploaded", http.StatusBadRequest)
-// 			return
-// 		}
-
-// 		for _, fileHeader := range files {
-// 			file, err := fileHeader.Open()
-// 			if err != nil {
-// 				http.Error(w, fmt.Sprintf("Failed to open file: %s", fileHeader.Filename), http.StatusInternalServerError)
-// 				return
-// 			}
-// 			//defer file.Close()
-
-// 			path := filepath.Join(baseDir, decodedPath)
-// 			dstPath := filepath.Join(path, fileHeader.Filename)
-// 			fmt.Println(path)
-// 			fmt.Println(dstPath)
-// 			outFile, err := os.Create(dstPath)
-// 			if err != nil {
-// 				http.Error(w, fmt.Sprintf("Failed to create file: %s", dstPath), http.StatusInternalServerError)
-// 				return
-// 			}
-// 			//defer outFile.Close()
-
-// 			_, err = io.Copy(outFile, file)
-// 			if err != nil {
-// 				http.Error(w, fmt.Sprintf("Failed to save file: %s", dstPath), http.StatusInternalServerError)
-// 				return
-// 			}
-
-// 			file.Close()
-// 			outFile.Close()
-
-// 			log.Printf("Saved file: %s", dstPath)
-// 		}
-
-// 	}
-// }
