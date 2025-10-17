@@ -26,6 +26,7 @@ func main() {
 	portFlag := flag.Int("port", 8080, "enter port for server to use")
 	serveDirFlag := flag.String("serveDir", ".", "root directory from which files are served")
 	enableUploadFlag := flag.Bool("enableUpload", false, "usage enables uploading of files using form")
+	enableDiskStatusFlag := flag.Bool("enableDiskStatus", false, "usage displays disk status of current directory")
 
 	flag.Usage = func() {
 		fmt.Println("meserve - a simple fileserver written in Go that allows file browsing, downloading and uploading.")
@@ -38,6 +39,7 @@ func main() {
 	portStr := strconv.Itoa(portInt)
 	selectedDir := *serveDirFlag
 	enabledUpload := *enableUploadFlag
+	enabledDiskStatus := *enableDiskStatusFlag
 
 	if !pathExists(selectedDir) {
 		//fmt.Println("wrong --serveDir , dir does not exist")
@@ -52,7 +54,7 @@ func main() {
 
 	sysinfo.PrintAllAddresses(portInt)
 
-	http.HandleFunc("GET /", handlers.FileHandler(selectedDir, enabledUpload))
+	http.HandleFunc("GET /", handlers.FileHandler(selectedDir, enabledUpload, enabledDiskStatus))
 	http.HandleFunc("POST /", handlers.UploadStreamHandler(selectedDir))
 
 	fmt.Printf("Serving directory %s\n", selectedDir)
@@ -61,4 +63,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }

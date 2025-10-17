@@ -15,7 +15,7 @@ import (
 	"github.com/matejeliash/meserve/internal/tmpl"
 )
 
-func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
+func FileHandler(baseDir string, enabledUpload bool, enabledDiskStatus bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		decodedPath, err := url.PathUnescape(r.URL.Path)
@@ -54,10 +54,14 @@ func FileHandler(baseDir string, enabledUpload bool) http.HandlerFunc {
 
 			files.SortFileInfos(fileInfos)
 
-			diskStatus, err := sysinfo.GetDiskStatus(realPath)
-			if err != nil {
-				http.Error(w, "Failed to get disk info", http.StatusInternalServerError)
-				return
+			diskStatus := ""
+
+			if enabledUpload {
+				diskStatus, err = sysinfo.GetDiskStatus(realPath)
+				if err != nil {
+					http.Error(w, "Failed to get disk info", http.StatusInternalServerError)
+					return
+				}
 			}
 
 			tmpl, err := tmpl.GetTemplate()

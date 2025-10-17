@@ -64,10 +64,10 @@ func GetFileInfos(path string) ([]FileInfo, error) {
 			Name:             file.Name(),
 			Size:             statInfo.Size(),
 			HumanSize:        format.PadRight(format.FormatSize(statInfo.Size()), 20),
-			ModTime:          statInfo.ModTime(),
-			FormattedModTime: format.FormatTime(statInfo.ModTime()),
+			ModTime:          statInfo.ModTime().Local(),
+			FormattedModTime: format.FormatTime(statInfo.ModTime().Local()),
 			IsDir:            isDir,
-			UnixModTime:      statInfo.ModTime().UnixMilli(),
+			UnixModTime:      statInfo.ModTime().Local().UnixMilli(),
 			Path:             escapedPath,
 		})
 	}
