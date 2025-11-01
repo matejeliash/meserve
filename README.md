@@ -1,12 +1,21 @@
-
-
 # meserve
 
-This is a simple HTTP server written in Go.
-Currently, the program allows basic file browsing within a shared part of your filesystem.
+This is a simple HTTP server written in Go. Currently, the program allows basic file browsing within a shared part of your filesystem.
+In the file listing, you can sort by modification time, alphabetical order, and file size. Files can also be uploaded to the server, and they will be placed in the current directory displayed in the browser.
 
-## Basic Usage
+![desktop](assets/desktop.png)
 
+## Building and basic Usage
+
+The server can be built with the Go compiler:
+```bash
+go build -ldflags="-s -w" -o meserve ./cmd/meserve
+```
+The Go compiler also allows specifying the target architecture. We can create a binary for ARMv8 and specify Android so the server can run in Termux:
+
+```bash
+GOOS=android GOARCH=arm64 go build -ldflags="-s -w" -o meserve-termux ./cmd/meserve
+```
 The simplest way to run the server:
 
 ```
@@ -58,7 +67,7 @@ docker run --name meserve_container -p 22222:8080 -d  -v /media/ssd:/app/data me
 
 
 To-do terminal args:
-- [x] allow select port
+- [x] allow to select port
 - [x] enable/disable upload
 - [x] select server root dir
 - [ ] allow to hide contrete parts of html like upload div
