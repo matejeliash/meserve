@@ -18,8 +18,6 @@ func PrintAllAddresses(port int) {
 			continue // skip down interfaces
 		}
 
-		//fmt.Println("Interface Name:", iface.Name)
-
 		addrs, err := iface.Addrs()
 		if err != nil {
 			fmt.Println("  Error getting addresses:", err)

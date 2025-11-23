@@ -29,7 +29,6 @@ func FileHandler(baseDir string, enabledUpload bool, enabledDiskStatus bool) htt
 
 		realPath = strings.ReplaceAll(realPath, "-_PERCENT_-", "%")
 
-		// fmt.Println(path)
 		info, err := os.Stat(realPath)
 		if err != nil {
 			http.Error(w, "File with this url not found", http.StatusNotFound)
@@ -44,9 +43,7 @@ func FileHandler(baseDir string, enabledUpload bool, enabledDiskStatus bool) htt
 				return
 			}
 
-			//start := time.Now()
 			fileInfos, err := files.GetFileInfos(realPath)
-			//fmt.Println(time.Since(start))
 			if err != nil {
 				http.Error(w, "Failed to get files", http.StatusInternalServerError)
 				return
@@ -137,14 +134,15 @@ func UploadStreamHandler(baseDir string) http.HandlerFunc {
 			if err == io.EOF {
 				break
 			}
+
 			if err != nil {
-				http.Error(w, "Failed to read part", http.StatusInternalServerError)
+				http.Error(w, "Failed to read part from reader", http.StatusInternalServerError)
 				return
 			}
 			if part.FileName() == "" {
 				continue // Skip non-file fields
 			}
-
+			// Join path from url and baseDir from real fs
 			dstPath := filepath.Join(baseDir, decodedPath, filepath.Base(part.FileName()))
 			outFile, err := os.Create(dstPath)
 			if err != nil {
@@ -163,4 +161,5 @@ func UploadStreamHandler(baseDir string) http.HandlerFunc {
 			log.Printf("Saved file: %s", dstPath)
 		}
 	}
+
 }
