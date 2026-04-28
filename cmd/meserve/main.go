@@ -56,6 +56,7 @@ func main() {
 
 	http.HandleFunc("GET /", handlers.FileHandler(selectedDir, enabledUpload, enabledDiskStatus))
 	http.HandleFunc("POST /", handlers.UploadStreamHandler(selectedDir))
+	http.HandleFunc("DELETE /", handlers.DeleteFilesHandler(selectedDir))
 
 	fmt.Printf("Serving directory %s\n", selectedDir)
 	err = http.ListenAndServe(":"+portStr, nil)

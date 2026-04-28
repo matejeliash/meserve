@@ -10,10 +10,12 @@
 
                 white-space: nowrap; /* prevent wrapping */
                 overflow-x: auto;
+                background-color: #000;
+                color: #fff;
             }
             a {
                 text-decoration: none;
-                color: #0366d6;
+                color: #5480d1;
             }
             a:hover {
                 text-decoration: underline;
@@ -26,15 +28,34 @@
                 width: 10ch;
             }
             .type {
-                width: 10ch;
+                width: 8ch;
             }
             .humanModTime {
-                width: 20ch;
+                width: 18ch;
+            }
+
+            .unixPerms {
+                width: 10ch;
             }
             .sortSpan {
-                background-color: #101010;
+                background-color: #ccc;
                 padding: 10px;
-                color: #ffffff;
+                margin: 5px;
+                color: #000;
+                border-radius: 10px;
+            }
+            .hidden {
+                display: none;
+            }
+            .spaces {
+                padding: 10px;
+            }
+            input {
+                background-color: #ccc;
+                padding: 10px;
+                margin: 5px;
+                color: #000;
+                border-radius: 10px;
             }
         </style>
     </head>
@@ -58,272 +79,425 @@
             <p id="status"></p>
         </div>
         {{end}}
-        <span class="sortSpan" id="sortBySizeAsc">0-9💾</span>
-        <span class="sortSpan" id="sortBySizeDesc">9-0💾</span>
-        <span class="sortSpan" id="sortByModTimeAsc">newest-oldest📅</span>
-        <span class="sortSpan" id="sortByModTimeDesc">oldest-newest📅</span>
-        <span class="sortSpan" id="sortByNameAsc">A-Z️🔤</span>
-        <span class="sortSpan" id="sortByNameDesc">Z-A🔤</span>
+        <hr />
+        <div>
+            <span class="sortSpan" id="sortBySizeAsc">0-9💾</span>
+            <span class="sortSpan" id="sortBySizeDesc">9-0💾</span>
+            <span class="sortSpan" id="sortByModTimeAsc">newest-oldest📅</span>
+            <span class="sortSpan" id="sortByModTimeDesc">oldest-newest📅</span>
+            <span class="sortSpan" id="sortByNameAsc">A-Z️🔤</span>
+            <span class="sortSpan" id="sortByNameDesc">Z-A🔤</span>
+        </div>
+        <div>
+            <span class="sortSpan" id="enableDeletion">Enable deletion</span>
+            <span class="sortSpan" id="deleteFiles">Delete files</span>
+        </div>
+        <div class="spaces"></div>
+
+        <input type="text" id="searchField" placeholder="search files here" />
 
         <br />
+        <hr />
         <!-- <button id="sortBySizeBtn">Sort by Size</button>
         <button id="sortByNameBtn">Sort by Name</button> -->
-
-        {{range .Files}}
-        <div
-            class="file-entry"
-            data-size="{{.Size}}"
-            data-unixModTime="{{.UnixModTime}}"
-            data-type="{{if .IsDir}}dir{{else}}file{{end}}"
-        >
-            <span class="type"
-                >{{if .IsDir}}📁 &nbspDir{{else}}📄 File{{end}}</span
+        <div id="filesDiv">
+            {{range .Files}}
+            <div
+                class="file-entry"
+                data-size="{{.Size}}"
+                data-unixModTime="{{.UnixModTime}}"
+                data-type="{{if .IsDir}}dir{{else}}file{{end}}"
             >
-            <span class="size">{{.HumanSize}}</span>
-            <span class="humanModTime">{{.FormattedModTime}}</span>
-            <span class="name"
-                ><a href="{{.Path}}">{{.Name}}{{if .IsDir}}/{{end}}</a></span
-            >
+                <input class="hidden" type="checkbox" />
+                <span class="type"
+                    >{{if .IsDir}}📁 &nbspDir{{else}}📄 File{{end}}</span
+                >
+                <span class="size">{{.HumanSize}}</span>
+                <span class="humanModTime">{{.FormattedModTime}}</span>
+                <span class="unixPerms">{{.Perms}}</span>
+                <span class="name"
+                    ><a href="{{.Path}}"
+                        >{{.Name}}{{if .IsDir}}/{{end}}</a
+                    ></span
+                >
+            </div>
+            {{end}}
         </div>
-        {{end}} {{if ne .Path "/"}}
+
+        {{if ne .Path "/"}}
 
         <h3 class="linkBack"><a href="../">⬅️ Up</a></h3>
         {{end}}
 
         <script>
+            //@ts-check
+            document.getElementById("deleteFiles").classList.add("hidden")
 
-            {{if .EnabledUpload}}
-
-
-               const form = document.getElementById("uploadForm");
-               const fileInput = document.getElementById("fileInput");
-               const percentDisplay = document.getElementById("percent");
-               const speedDisplay = document.getElementById("speed");
-               const statusDisplay = document.getElementById("status");
-
-               form.addEventListener("submit", function (e) {
+            const input = document.getElementById("searchField");
 
 
-                 e.preventDefault();
 
-                   statusDisplay.textContent = "uploading ...";
+            input.addEventListener("input", (event) => {
 
-                   const files = fileInput.files;
-                   if (!files.length) return;
+              const query = event.target.value.toLowerCase();
 
-                   const formData = new FormData();
-                   for (const file of files) {
-                       formData.append("file", file);
+              const files = Array.from(
+                  document.querySelectorAll(".file-entry"),
+              );
+
+              files.map(file =>{
+                const fileName=file.querySelector(".name").textContent.toLowerCase();
+                if (fileName.includes(query)){
+                  file.classList.remove("hidden");
+
+                }else{
+                  file.classList.add("hidden");
+
+                }
+
+
+
+              })
+
+
+              for (const file of files) {
+                  container.appendChild(file);
+              }
+
+
+            });
+
+
+                {{if .EnabledUpload}}
+
+
+                   const form = document.getElementById("uploadForm");
+                   const fileInput = document.getElementById("fileInput");
+                   const percentDisplay = document.getElementById("percent");
+                   const speedDisplay = document.getElementById("speed");
+                   const statusDisplay = document.getElementById("status");
+
+                   form.addEventListener("submit", function (e) {
+
+
+                     e.preventDefault();
+
+                       statusDisplay.textContent = "uploading ...";
+
+                       const files = fileInput.files;
+                       if (!files.length) return;
+
+                       const formData = new FormData();
+                       for (const file of files) {
+                           formData.append("file", file);
+                       }
+
+                       const xhr = new XMLHttpRequest();
+                       xhr.open("POST", window.location.pathname);
+
+                       const startTime = Date.now();
+
+                       // Show alert if user tries to close window while uploading
+                        function handleBeforeUnload(e) {
+                            e.preventDefault();
+                            e.returnValue = ""; // Required for Chrome
+                        }
+                        window.addEventListener("beforeunload", handleBeforeUnload);
+
+                       xhr.upload.onprogress = function (e) {
+                           if (e.lengthComputable) {
+                               const percent = ((e.loaded / e.total) * 100).toFixed(2);
+                               percentDisplay.textContent =
+                                   "Progress: " + percent + "%";
+
+                               const elapsed = (Date.now() - startTime) / 1000;
+                               const speed = (
+                                   e.loaded /
+                                   1024 /
+                                   1024 /
+                                   elapsed
+                               ).toFixed(2);
+                               speedDisplay.textContent =
+                                   "Speed:   " + speed + " MB/s";
+                           }
+                       };
+
+                       xhr.onload = function () {
+                           if (xhr.status === 200) {
+                               statusDisplay.textContent = "Successfully uploaded";
+                           } else {
+                               alert("Upload failed.");
+                           }
+                       };
+
+                       xhr.onerror = function () {
+                           alert("An error occurred while uploading.");
+                           console.error("Upload error:", xhr.status, xhr.statusText);
+                       };
+
+                       xhr.send(formData);
+                   });
+                   {{end}}
+
+                   const sortByModTimeAsc = () => {
+                     const container = document.getElementById("filesDiv"); // or a more specific container of file entries
+                                         const files = Array.from(
+                                             document.querySelectorAll(".file-entry"),
+                                         );
+
+                                         files.sort(
+                                             (a, b) =>
+                                                 Number(b.getAttribute("data-unixModTime")) -
+                                                 Number(a.getAttribute("data-unixModTime")),
+                                         );
+
+                                         for (const file of files) {
+                                             container.appendChild(file);
+                                         }
+
                    }
 
-                   const xhr = new XMLHttpRequest();
-                   xhr.open("POST", window.location.pathname);
 
-                   const startTime = Date.now();
+                   const sortByModTimeDesc = () => {
+                     const container = document.getElementById("filesDiv"); // or a more specific container of file entries
+                                         const files = Array.from(
+                                             document.querySelectorAll(".file-entry"),
+                                         );
 
-                   // Show alert if user tries to close window while uploading
-                    function handleBeforeUnload(e) {
-                        e.preventDefault();
-                        e.returnValue = ""; // Required for Chrome
-                    }
-                    window.addEventListener("beforeunload", handleBeforeUnload);
-
-                   xhr.upload.onprogress = function (e) {
-                       if (e.lengthComputable) {
-                           const percent = ((e.loaded / e.total) * 100).toFixed(2);
-                           percentDisplay.textContent =
-                               "Progress: " + percent + "%";
-
-                           const elapsed = (Date.now() - startTime) / 1000;
-                           const speed = (
-                               e.loaded /
-                               1024 /
-                               1024 /
-                               elapsed
-                           ).toFixed(2);
-                           speedDisplay.textContent =
-                               "Speed:   " + speed + " MB/s";
-                       }
-                   };
-
-                   xhr.onload = function () {
-                       if (xhr.status === 200) {
-                           statusDisplay.textContent = "Successfully uploaded";
-                       } else {
-                           alert("Upload failed.");
-                       }
-                   };
-
-                   xhr.onerror = function () {
-                       alert("An error occurred while uploading.");
-                       console.error("Upload error:", xhr.status, xhr.statusText);
-                   };
-
-                   xhr.send(formData);
-               });
-               {{end}}
-
-               document
-                   .getElementById("sortByModTimeAsc")
-                   .addEventListener("click", () => {
-                       const container = document.body; // or a more specific container of file entries
-                       const files = Array.from(
-                           document.querySelectorAll(".file-entry"),
-                       );
-
-                       files.sort(
-                           (a, b) =>
-                               Number(b.getAttribute("data-unixModTime")) -
-                               Number(a.getAttribute("data-unixModtime")),
-                       );
-
-                       for (const file of files) {
-                           container.appendChild(file);
-                       }
-
-                       backLinks =document.querySelectorAll(".linkBack")
-                       console.log(backLinks)
-                       if (backLinks.length == 2){
-                         container.appendChild(backLinks[1])
-                       }
-
-                   });
+                                         files.sort(
+                                             (a, b) =>
+                                                 Number(a.getAttribute("data-unixModTime")) -
+                                                 Number(b.getAttribute("data-unixModTime")),
+                                         );
 
 
-               document
-                   .getElementById("sortByModTimeDesc")
-                   .addEventListener("click", () => {
-                       const container = document.body; // or a more specific container of file entries
-                       const files = Array.from(
-                           document.querySelectorAll(".file-entry"),
-                       );
+                                         for (const file of files) {
+                                             container.appendChild(file);
+                                         }
 
-                       files.sort(
-                           (a, b) =>
-                               Number(a.getAttribute("data-unixModTime")) -
-                               Number(b.getAttribute("data-unixModTime")),
-                       );
 
-                       for (const file of files) {
-                           container.appendChild(file);
-                       }
+                   }
+                   const sortBySizeAsc = () => {
+                     const container = document.getElementById("filesDiv"); // or a more specific container of file entries
+                     const files = Array.from(
+                         document.querySelectorAll(".file-entry"),
+                     );
 
-                       backLinks =document.querySelectorAll(".linkBack")
-                       console.log(backLinks)
-                       if (backLinks.length == 2){
-                         container.appendChild(backLinks[1])
-                       }
+                     files.sort(
+                         (a, b) =>
+                             Number(a.getAttribute("data-size")) -
+                             Number(b.getAttribute("data-size")),
+                     );
 
-                   });
+                     for (const file of files) {
+                         container.appendChild(file);
+                     }
+
+                   }
+
+                   const sortBySizeDesc = () => {
+                     const container = document.getElementById("filesDiv"); // or a more specific container of file entries
+                     const files = Array.from(
+                         document.querySelectorAll(".file-entry"),
+                     );
+
+                     files.sort(
+                         (a, b) =>
+                             Number(b.getAttribute("data-size")) -
+                             Number(a.getAttribute("data-size")),
+                     );
+
+                     for (const file of files) {
+                         container.appendChild(file);
+                     }
+
+                   }
+
+                   const sortByNameAsc = () => {
+                     const container = document.getElementById("filesDiv"); // or a more specific container of file entries
+                     const files = Array.from(
+                         document.querySelectorAll(".file-entry"),
+                     );
+
+                     files.sort((a, b) => {
+                         const nameA = a
+                             .querySelector(".name")
+                             .textContent.toLowerCase();
+                         const nameB = b
+                             .querySelector(".name")
+                             .textContent.toLowerCase();
+                         return nameA.localeCompare(nameB);
+                     });
+
+                     for (const file of files) container.appendChild(file);
+
+                   }
+
+
+                   const sortByNameDesc = () => {
+                     const container = document.getElementById("filesDiv"); // or a more specific container of file entries
+                     const files = Array.from(
+                         document.querySelectorAll(".file-entry"),
+                     );
+
+                     files.sort((a, b) => {
+                         const nameA = a
+                             .querySelector(".name")
+                             .textContent.toLowerCase();
+                         const nameB = b
+                             .querySelector(".name")
+                             .textContent.toLowerCase();
+                         return nameB.localeCompare(nameA);
+                     });
+
+                     for (const file of files) container.appendChild(file);
+
+                   }
 
 
 
-               document
-                   .getElementById("sortBySizeAsc")
-                   .addEventListener("click", () => {
-                       const container = document.body; // or a more specific container of file entries
-                       const files = Array.from(
-                           document.querySelectorAll(".file-entry"),
-                       );
+                   document
+                       .getElementById("sortByModTimeAsc")
+                       .addEventListener("click", () => {
 
-                       files.sort(
-                           (a, b) =>
-                               Number(a.getAttribute("data-size")) -
-                               Number(b.getAttribute("data-size")),
-                       );
-
-                       for (const file of files) {
-                           container.appendChild(file);
-                       }
-
-                       backLinks =document.querySelectorAll(".linkBack")
-                       console.log(backLinks)
-                       if (backLinks.length == 2){
-                         container.appendChild(backLinks[1])
-                       }
-
-                   });
-
-               document
-                   .getElementById("sortBySizeDesc")
-                   .addEventListener("click", () => {
-                       const container = document.body; // or a more specific container of file entries
-                       const files = Array.from(
-                           document.querySelectorAll(".file-entry"),
-                       );
-
-                       files.sort(
-                           (a, b) =>
-                               Number(b.getAttribute("data-size")) -
-                               Number(a.getAttribute("data-size")),
-                       );
-
-                       for (const file of files) {
-                           container.appendChild(file);
-                       }
-
-                       backLinks =document.querySelectorAll(".linkBack")
-                       console.log(backLinks)
-                       if (backLinks.length == 2){
-                         container.appendChild(backLinks[1])
-                       }
-                   });
-
-               document
-                   .getElementById("sortByNameAsc")
-                   .addEventListener("click", () => {
-                       const container = document.body; // Or your specific container
-                       const files = Array.from(
-                           document.querySelectorAll(".file-entry"),
-                       );
-
-                       files.sort((a, b) => {
-                           const nameA = a
-                               .querySelector(".name")
-                               .textContent.toLowerCase();
-                           const nameB = b
-                               .querySelector(".name")
-                               .textContent.toLowerCase();
-                           return nameA.localeCompare(nameB);
+                         sortByModTimeAsc()
+                         localStorage.setItem("selectedSort","sortByModTimeAsc")
                        });
 
-                       for (const file of files) container.appendChild(file);
 
-                       backLinks =document.querySelectorAll(".linkBack")
-                       console.log(backLinks)
-                       if (backLinks.length == 2){
-                         container.appendChild(backLinks[1])
-                       }
-
-                   });
-
-               // sort by
-               document
-                   .getElementById("sortByNameDesc")
-                   .addEventListener("click", () => {
-                       const container = document.body; // Or your specific container
-                       const files = Array.from(
-                           document.querySelectorAll(".file-entry"),
-                       );
-
-                       files.sort((a, b) => {
-                           const nameA = a
-                               .querySelector(".name")
-                               .textContent.toLowerCase();
-                           const nameB = b
-                               .querySelector(".name")
-                               .textContent.toLowerCase();
-                           return nameB.localeCompare(nameA);
+                   document
+                       .getElementById("sortByModTimeDesc")
+                       .addEventListener("click", () => {
+                         sortByModTimeDesc()
+                         localStorage.setItem("selectedSort","sortByModTimeDesc")
                        });
 
-                       for (const file of files) container.appendChild(file);
 
-                       backLinks =document.querySelectorAll(".linkBack")
-                       console.log(backLinks)
-                       if (backLinks.length == 2){
-                         container.appendChild(backLinks[1])
-                       }
-                   });
+
+                   document
+                       .getElementById("sortBySizeAsc")
+                       .addEventListener("click", () => {
+                         sortBySizeAsc()
+                         localStorage.setItem("selectedSort","sortBySizeAsc")
+                       });
+
+                   document
+                       .getElementById("sortBySizeDesc")
+                       .addEventListener("click", () => {
+                         sortBySizeDesc()
+                         localStorage.setItem("selectedSort","sortBySizeDesc")
+                       });
+
+                   document
+                       .getElementById("sortByNameAsc")
+                       .addEventListener("click", () => {
+                         sortByNameAsc()
+                         localStorage.setItem("selectedSort","sortByNameAsc")
+
+                       });
+
+                   // sort by
+                   document
+                       .getElementById("sortByNameDesc")
+                       .addEventListener("click", () => {
+                         sortByNameDesc()
+                         localStorage.setItem("selectedSort","sortByNameDesc")
+                       });
+
+
+                   document
+                       .getElementById("enableDeletion")
+                       .addEventListener("click", () => {
+                           const container = document.getElementById("filesDiv"); // or a more specific container of file entries
+                           const files = Array.from(
+                               document.querySelectorAll(".file-entry"),
+                           );
+
+                           files.forEach( f => {
+                             f.firstElementChild.classList.remove("hidden");
+
+
+                           })
+
+                           document.getElementById("deleteFiles").classList.remove("hidden");
+
+                       });
+
+                   document
+                       .getElementById("deleteFiles")
+                       .addEventListener("click", async () => {
+                           const container = document.getElementById("filesDiv"); // or a more specific container of file entries
+                           const files = Array.from(
+                               document.querySelectorAll(".file-entry"),
+                           );
+
+                           if(!confirm("Do you want to delete selected files ?")){
+                             return;
+                           }
+
+                           let filesToDelete = []
+
+                           files.forEach( f => {
+                             if(f.firstElementChild.checked){
+                               const fileName = f.lastElementChild.innerText
+                               filesToDelete.push(fileName);
+
+                             }
+
+                           })
+
+                           console.log(filesToDelete);
+
+                           try{
+                             const res =await fetch(`${window.location.pathname}`, {
+                               method: "DELETE",
+                               headers: {
+                                 "Content-Type": "application/json",
+                               },
+                               body: JSON.stringify({
+                                 files : filesToDelete
+                               }),
+                             });
+
+                             if (!res.ok){
+                               throw new Error("failed to delete files")
+                             }
+
+                             /// refresh page
+
+                           }catch(err){
+                             console.log(err)
+                           }
+
+                           window.location.reload();
+
+                       });
+
+
+                   const selectedSort = localStorage.getItem("selectedSort");
+
+                   switch(selectedSort){
+                     case "sortByModTimeAsc" :
+                      sortByModTimeAsc();
+                      break;
+                     case "sortByModTimeDesc" :
+                      sortByModTimeDesc();
+                      break;
+                      case "sortBySizeAsc" :
+                       sortBySizeAsc();
+                       break;
+                      case "sortBySizeDesc" :
+                       sortBySizeDesc();
+                       break;
+                      case "sortByNameAsc" :
+                       sortByNameAsc();
+                        break;
+                      case "sortByNameDesc" :
+                        sortByNameDesc();
+                        break;
+                      default:
+                        break;
+                   }
         </script>
     </body>
 </html>

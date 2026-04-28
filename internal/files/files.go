@@ -21,6 +21,11 @@ type FileInfo struct {
 	ModTime          time.Time
 	UnixModTime      int64
 	FormattedModTime string
+	Perms            string
+}
+
+type DeleteFilesDTO struct {
+	Files []string
 }
 
 func GetFileInfos(path string) ([]FileInfo, error) {
@@ -35,6 +40,7 @@ func GetFileInfos(path string) ([]FileInfo, error) {
 	for _, file := range files {
 		// Get basic info (does not follow symlinks)
 		lstatInfo, err := file.Info()
+
 		if err != nil {
 			continue
 		}
@@ -54,6 +60,7 @@ func GetFileInfos(path string) ([]FileInfo, error) {
 		// Make additon espacing in case when % is present in filename.
 		escapedName := strings.ReplaceAll(file.Name(), "%", "-_PERCENT_-")
 		escapedPath := url.PathEscape(escapedName)
+		perms := lstatInfo.Mode().Perm().String()
 
 		//escapedPath := url.QueryEscape(file.Name())
 		if isDir {
@@ -63,12 +70,13 @@ func GetFileInfos(path string) ([]FileInfo, error) {
 		fileInfos = append(fileInfos, FileInfo{
 			Name:             file.Name(),
 			Size:             statInfo.Size(),
-			HumanSize:        format.PadRight(format.FormatSize(statInfo.Size()), 20),
+			HumanSize:        format.FormatSize(statInfo.Size()),
 			ModTime:          statInfo.ModTime().Local(),
 			FormattedModTime: format.FormatTime(statInfo.ModTime().Local()),
 			IsDir:            isDir,
 			UnixModTime:      statInfo.ModTime().Local().UnixMilli(),
 			Path:             escapedPath,
+			Perms:            format.PadRight(perms, 20),
 		})
 	}
 

@@ -1,0 +1,22 @@
+# services:
+#   meserve:
+#     container_name: meserve
+#     image: meserve
+#     ports:
+#       - "22222:8080"
+#     volumes:
+#       - /media/ssd:/app/data
+#     command: ["--serveDir", "/app/data", "--enableUpload"]
+#     restart: unless-stopped
+
+services:
+  meserve:
+    container_name: meserve
+    build: .
+    image: localhost/meserve:latest
+    ports:
+      - "22222:8080"
+    volumes:
+      - /media/ssd:/app/data
+    command: ["--serveDir", "/app/data", "--enableUpload"]
+    restart: unless-stopped

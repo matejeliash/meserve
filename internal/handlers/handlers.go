@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -14,6 +15,38 @@ import (
 	"github.com/matejeliash/meserve/internal/sysinfo"
 	"github.com/matejeliash/meserve/internal/tmpl"
 )
+
+func DeleteFilesHandler(baseDir string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decodedPath, err := url.PathUnescape(r.URL.Path)
+		if err != nil {
+			http.Error(w, "Invalid URL path", http.StatusBadRequest)
+			return
+		}
+		decodedPath = strings.TrimPrefix(decodedPath, "/")
+		realPath := filepath.Join(baseDir, decodedPath)
+
+		var deleteFilesDTO files.DeleteFilesDTO
+		err = json.NewDecoder(r.Body).Decode(&deleteFilesDTO)
+		if err != nil {
+			http.Error(w, "Failed to parse what files to delete", http.StatusBadRequest)
+			return
+		}
+		var finalPath string
+		for _, file := range deleteFilesDTO.Files {
+
+			finalPath = filepath.Join(realPath, file)
+			fmt.Println("Deleting: " + finalPath)
+			err = os.RemoveAll(finalPath)
+			if err != nil {
+				fmt.Println("delete error: " + err.Error())
+			}
+
+		}
+
+	}
+
+}
 
 func FileHandler(baseDir string, enabledUpload bool, enabledDiskStatus bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +78,7 @@ func FileHandler(baseDir string, enabledUpload bool, enabledDiskStatus bool) htt
 
 			fileInfos, err := files.GetFileInfos(realPath)
 			if err != nil {
-				http.Error(w, "Failed to get files", http.StatusInternalServerError)
+				http.Error(w, "Failed to get files :"+err.Error(), http.StatusInternalServerError)
 				return
 			}
 
@@ -88,6 +121,7 @@ func FileHandler(baseDir string, enabledUpload bool, enabledDiskStatus bool) htt
 		} else { // file is not dir and file is served
 
 			SetCustomHeaders(w, realPath)
+
 			http.ServeFile(w, r, realPath)
 		}
 	}
@@ -144,6 +178,7 @@ func UploadStreamHandler(baseDir string) http.HandlerFunc {
 			}
 			// Join path from url and baseDir from real fs
 			dstPath := filepath.Join(baseDir, decodedPath, filepath.Base(part.FileName()))
+			fmt.Println(dstPath)
 			outFile, err := os.Create(dstPath)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Failed to create file: %s", dstPath), http.StatusInternalServerError)
