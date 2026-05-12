@@ -3,6 +3,11 @@
     <head>
         <title>Index of {{ .Path }}</title>
         <style>
+            :root {
+                --blue-color: #3498db;
+                --button-color: #b2beed;
+                --gray-color: #d3d7e8;
+            }
             body {
                 font-family: sans-serif;
                 margin: 2rem;
@@ -10,12 +15,12 @@
 
                 white-space: nowrap; /* prevent wrapping */
                 overflow-x: auto;
-                background-color: #000;
+                background-color: #111;
                 color: #fff;
             }
             a {
                 text-decoration: none;
-                color: #5480d1;
+                color: var(--blue-color);
             }
             a:hover {
                 text-decoration: underline;
@@ -38,11 +43,13 @@
                 width: 10ch;
             }
             .sortSpan {
-                background-color: #ccc;
-                padding: 10px;
-                margin: 5px;
                 color: #000;
-                border-radius: 10px;
+                background-color: var(--button-color);
+                font-family: Arial;
+                border-radius: 5px;
+                font-size: 14px;
+                padding: 5px;
+                margin: 5px;
             }
             .hidden {
                 display: none;
@@ -51,11 +58,46 @@
                 padding: 10px;
             }
             input {
+                background-color: var(--gray-color);
+                padding: 10px;
+                color: #000;
+                border-radius: 10px;
+            }
+            uploadForm {
                 background-color: #ccc;
+                color: #000;
+                border-radius: 10px;
+            }
+
+            select {
+                background-color: var(--gray-color);
                 padding: 10px;
                 margin: 5px;
                 color: #000;
                 border-radius: 10px;
+                font-size: 14px;
+            }
+
+            button {
+                background-color: var(--button-color);
+                font-family: Arial;
+                border-radius: 5px;
+                font-size: 14px;
+                padding: 5px;
+                margin: 5px;
+                box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Inner shadow */
+            }
+            input[type="file"]::file-selector-button {
+                background-color: var(--button-color);
+                font-family: Arial;
+                border-radius: 5px;
+                font-size: 14px;
+                padding: 5px;
+            }
+
+            label {
+                font-weight: bold;
+                font-style: italic;
             }
         </style>
     </head>
@@ -68,7 +110,9 @@
         <p><strong>Free space:</strong> {{ .DiskStatus }}</p>
         {{ end }} {{if .EnabledUpload}}
         <form id="uploadForm">
-            <p>Upload files to current directory:</p>
+            <!--<p>Upload files to current directory:</p>-->
+            <label for="fileInput">Upload files to current directory:</label>
+            <br />
             <input type="file" id="fileInput" name="file" multiple required />
             <button type="submit">Upload</button>
         </form>
@@ -80,20 +124,33 @@
         </div>
         {{end}}
         <hr />
-        <div>
-            <span class="sortSpan" id="sortBySizeAsc">0-9💾</span>
-            <span class="sortSpan" id="sortBySizeDesc">9-0💾</span>
-            <span class="sortSpan" id="sortByModTimeAsc">newest-oldest📅</span>
-            <span class="sortSpan" id="sortByModTimeDesc">oldest-newest📅</span>
-            <span class="sortSpan" id="sortByNameAsc">A-Z️🔤</span>
-            <span class="sortSpan" id="sortByNameDesc">Z-A🔤</span>
-        </div>
+
+        <label for="sortSelect">Select file sorting:</label>
+        <br />
+        <select id="sortSelect">
+            <option value="" selected></option>
+            <option value="sortBySizeAsc">by size ascending (0-9)</option>
+            <option value="sortBySizeDesc">by size descending (9-0)</option>
+            <option value="sortByModTimeAsc">
+                by mod time ascending (oldest-newest)
+            </option>
+            <option value="sortByModTimeDesc">
+                by mod time descending (newest-oldest)
+            </option>
+            <option value="sortByNameAsc">by name ascending (A-Z )</option>
+            <option value="sortByNameDesc">by name descending (Z-A)</option>
+        </select>
+
         <div>
             <span class="sortSpan" id="enableDeletion">Enable deletion</span>
             <span class="sortSpan" id="deleteFiles">Delete files</span>
+            <br />
         </div>
-        <div class="spaces"></div>
+        <hr />
+        <!--<div class="spaces"></div>-->
 
+        <label for="searchField">Filter files:</label>
+        <br />
         <input type="text" id="searchField" placeholder="search files here" />
 
         <br />
@@ -160,9 +217,6 @@
               })
 
 
-              for (const file of files) {
-                  container.appendChild(file);
-              }
 
 
             });
@@ -239,7 +293,7 @@
                    });
                    {{end}}
 
-                   const sortByModTimeAsc = () => {
+                   const sortByModTimeDesc = () => {
                      const container = document.getElementById("filesDiv"); // or a more specific container of file entries
                                          const files = Array.from(
                                              document.querySelectorAll(".file-entry"),
@@ -258,7 +312,7 @@
                    }
 
 
-                   const sortByModTimeDesc = () => {
+                   const sortByModTimeAsc = () => {
                      const container = document.getElementById("filesDiv"); // or a more specific container of file entries
                                          const files = Array.from(
                                              document.querySelectorAll(".file-entry"),
@@ -357,55 +411,6 @@
 
 
                    document
-                       .getElementById("sortByModTimeAsc")
-                       .addEventListener("click", () => {
-
-                         sortByModTimeAsc()
-                         localStorage.setItem("selectedSort","sortByModTimeAsc")
-                       });
-
-
-                   document
-                       .getElementById("sortByModTimeDesc")
-                       .addEventListener("click", () => {
-                         sortByModTimeDesc()
-                         localStorage.setItem("selectedSort","sortByModTimeDesc")
-                       });
-
-
-
-                   document
-                       .getElementById("sortBySizeAsc")
-                       .addEventListener("click", () => {
-                         sortBySizeAsc()
-                         localStorage.setItem("selectedSort","sortBySizeAsc")
-                       });
-
-                   document
-                       .getElementById("sortBySizeDesc")
-                       .addEventListener("click", () => {
-                         sortBySizeDesc()
-                         localStorage.setItem("selectedSort","sortBySizeDesc")
-                       });
-
-                   document
-                       .getElementById("sortByNameAsc")
-                       .addEventListener("click", () => {
-                         sortByNameAsc()
-                         localStorage.setItem("selectedSort","sortByNameAsc")
-
-                       });
-
-                   // sort by
-                   document
-                       .getElementById("sortByNameDesc")
-                       .addEventListener("click", () => {
-                         sortByNameDesc()
-                         localStorage.setItem("selectedSort","sortByNameDesc")
-                       });
-
-
-                   document
                        .getElementById("enableDeletion")
                        .addEventListener("click", () => {
                            const container = document.getElementById("filesDiv"); // or a more specific container of file entries
@@ -473,31 +478,49 @@
 
                        });
 
+                   const sortDecider = () =>{
 
-                   const selectedSort = localStorage.getItem("selectedSort");
+                     const selectedSort = localStorage.getItem("selectedSort");
 
-                   switch(selectedSort){
-                     case "sortByModTimeAsc" :
-                      sortByModTimeAsc();
-                      break;
-                     case "sortByModTimeDesc" :
-                      sortByModTimeDesc();
-                      break;
-                      case "sortBySizeAsc" :
-                       sortBySizeAsc();
-                       break;
-                      case "sortBySizeDesc" :
-                       sortBySizeDesc();
-                       break;
-                      case "sortByNameAsc" :
-                       sortByNameAsc();
+                     sortSelect.value = selectedSort;
+                     if(!selectedSort) return;
+
+                     switch(selectedSort){
+                       case "sortByModTimeAsc" :
+                        sortByModTimeAsc();
                         break;
-                      case "sortByNameDesc" :
-                        sortByNameDesc();
+                       case "sortByModTimeDesc" :
+                        sortByModTimeDesc();
                         break;
-                      default:
-                        break;
+                        case "sortBySizeAsc" :
+                         sortBySizeAsc();
+                         break;
+                        case "sortBySizeDesc" :
+                         sortBySizeDesc();
+                         break;
+                        case "sortByNameAsc" :
+                         sortByNameAsc();
+                          break;
+                        case "sortByNameDesc" :
+                          sortByNameDesc();
+                          break;
+                        default:
+                          break;
+                     }
                    }
+
+
+                   const sortSelect = document.getElementById("sortSelect");
+                   sortSelect.addEventListener("change", e =>{
+                     console.log("sorting selection")
+                     const value = e.target.value;
+                     if(value){
+                       localStorage.setItem("selectedSort",value);
+                       sortDecider();
+                     }
+                   })
+
+                   sortDecider()
         </script>
     </body>
 </html>
