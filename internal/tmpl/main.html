@@ -99,6 +99,9 @@
                 font-weight: bold;
                 font-style: italic;
             }
+            .file-entry {
+                padding: 5px;
+            }
         </style>
     </head>
     <body>
@@ -114,7 +117,7 @@
             <label for="fileInput">Upload files to current directory:</label>
             <br />
             <input type="file" id="fileInput" name="file" multiple required />
-            <button type="submit">Upload</button>
+            <button type="submit">Upload 📤</button>
         </form>
 
         <div id="progress">
@@ -129,25 +132,24 @@
         <br />
         <select id="sortSelect">
             <option value="" selected></option>
-            <option value="sortBySizeAsc">by size ascending (0-9)</option>
-            <option value="sortBySizeDesc">by size descending (9-0)</option>
+            <option value="sortBySizeAsc">by size ascending (0-9) 💾△</option>
+            <option value="sortBySizeDesc">by size descending (9-0) 💾⛛</option>
             <option value="sortByModTimeAsc">
-                by mod time ascending (oldest-newest)
+                by mod time ascending (oldest-newest) ⏳△
             </option>
             <option value="sortByModTimeDesc">
-                by mod time descending (newest-oldest)
+                by mod time descending (newest-oldest) ⏳⛛
             </option>
-            <option value="sortByNameAsc">by name ascending (A-Z )</option>
-            <option value="sortByNameDesc">by name descending (Z-A)</option>
+            <option value="sortByNameAsc">by name ascending (A-Z)△</option>
+            <option value="sortByNameDesc">by name descending (Z-A)⛛</option>
         </select>
 
         <div>
-            <span class="sortSpan" id="enableDeletion">Enable deletion</span>
+            <span class="sortSpan" id="enableDeletion">Enable deletion ❌</span>
             <span class="sortSpan" id="deleteFiles">Delete files</span>
             <br />
         </div>
         <hr />
-        <!--<div class="spaces"></div>-->
 
         <label for="searchField">Filter files:</label>
         <br />
@@ -155,8 +157,6 @@
 
         <br />
         <hr />
-        <!-- <button id="sortBySizeBtn">Sort by Size</button>
-        <button id="sortByNameBtn">Sort by Name</button> -->
         <div id="filesDiv">
             {{range .Files}}
             <div
@@ -215,7 +215,6 @@
 
 
               })
-
 
 
 
